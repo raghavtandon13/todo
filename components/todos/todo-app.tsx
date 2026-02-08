@@ -7,17 +7,16 @@ import {
     CheckCircleIcon,
     ClipboardTextIcon,
     DotsThreeVerticalIcon,
+    LockIcon,
     MagnifyingGlassIcon,
-    MonitorIcon,
-    MoonIcon,
     PencilSimpleIcon,
     PlusIcon,
-    SunIcon,
     TrashIcon,
+    UsersIcon,
     XCircleIcon,
 } from "@phosphor-icons/react";
 import * as React from "react";
-import type { CommentRow, TodoRow } from "@/components/todos/types";
+import type { CommentRow, TodoRow, TodoVisibility } from "@/components/todos/types";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -50,11 +49,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { useTheme } from "../theme-provider";
+import { useTeams } from "./team-context";
+import { TeamSelector } from "./team-manager";
+import { ThemeToggle } from "./theme-toggle";
 
 function formatDateTime(iso: string) {
     const d = new Date(iso);
@@ -68,8 +71,6 @@ function formatDateTime(iso: string) {
     });
 }
 
-import { ThemeToggle } from "./theme-toggle";
-
 export function TodoApp({
     initialTodos,
     initialLoadError,
@@ -82,6 +83,8 @@ export function TodoApp({
     userEmail: string;
 }) {
     const supabase = React.useMemo(() => createClient(), []);
+    const { teams, selectedTeamId } = useTeams();
+    const selectedTeam = teams.find((t) => t.id === selectedTeamId);
 
     const [todos, setTodos] = React.useState<TodoRow[]>(initialTodos);
     const [selectedTodoId, setSelectedTodoId] = React.useState<string | null>(initialTodos[0]?.id ?? null);
@@ -91,23 +94,42 @@ export function TodoApp({
 
     const [newTitle, setNewTitle] = React.useState("");
     const [newDescription, setNewDescription] = React.useState("");
+    const [newVisibility, setNewVisibility] = React.useState<TodoVisibility>("private");
+    const [newTeamId, setNewTeamId] = React.useState<string | null>(null);
     const [isCreating, startCreating] = React.useTransition();
 
     const selected = React.useMemo(() => todos.find((t) => t.id === selectedTodoId) ?? null, [todos, selectedTodoId]);
 
+    // Filter todos based on scope, search query, and team context
     const filteredTodos = React.useMemo(() => {
         const q = query.trim().toLowerCase();
         return todos
             .filter((t) => (scope === "archived" ? t.archived : !t.archived))
             .filter((t) => {
+                // Filter by team context
+                if (selectedTeamId) {
+                    // In team view: show team todos and user's private todos
+                    return t.team_id === selectedTeamId || (t.user_id === userId && t.visibility === "private");
+                } else {
+                    // In personal view: show only private todos and team todos from all teams
+                    return t.visibility === "private" || t.team_id !== null;
+                }
+            })
+            .filter((t) => {
                 if (!q) return true;
                 return `${t.title} ${t.description ?? ""}`.toLowerCase().includes(q);
             })
             .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-    }, [todos, scope, query]);
+    }, [todos, scope, query, selectedTeamId, userId]);
 
     async function refreshTodos() {
-        const { data, error } = await supabase.from("todos").select("*").order("created_at", { ascending: false });
+        const { data, error } = await supabase
+            .from("todos")
+            .select(`
+        *,
+        team:teams(id, name, slug)
+      `)
+            .order("created_at", { ascending: false });
 
         if (error) {
             setLoadError(error.message);
@@ -133,18 +155,27 @@ export function TodoApp({
 
         setLoadError(null);
 
-        const { data, error } = await supabase
-            .from("todos")
-            .insert({
-                user_id: userId,
-                author_email: userEmail,
-                title,
-                description: description ? description : null,
-                status: "open" as const,
-                archived: false,
-            })
-            .select("*")
-            .single();
+        const insertData: {
+            user_id: string;
+            author_email: string;
+            title: string;
+            description: string | null;
+            status: "open";
+            archived: boolean;
+            visibility: TodoVisibility;
+            team_id: string | null;
+        } = {
+            user_id: userId,
+            author_email: userEmail,
+            title,
+            description: description ? description : null,
+            status: "open" as const,
+            archived: false,
+            visibility: newVisibility,
+            team_id: newVisibility === "team" ? newTeamId : null,
+        };
+
+        const { data, error } = await supabase.from("todos").insert(insertData).select("*").single();
 
         if (error) {
             setLoadError(error.message);
@@ -156,11 +187,13 @@ export function TodoApp({
         setSelectedTodoId(row.id);
         setNewTitle("");
         setNewDescription("");
+        setNewVisibility("private");
+        setNewTeamId(null);
     }
 
     async function updateTodo(
         id: string,
-        patch: Partial<Pick<TodoRow, "title" | "description" | "status" | "archived">>,
+        patch: Partial<Pick<TodoRow, "title" | "description" | "status" | "archived" | "visibility" | "team_id">>,
     ) {
         setLoadError(null);
         const { data, error } = await supabase.from("todos").update(patch).eq("id", id).select("*").single();
@@ -207,6 +240,7 @@ export function TodoApp({
                     </div>
                     <div className="ml-auto flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">{userEmail}</Badge>
+                        <TeamSelector />
                         <ThemeToggle />
                         <Button onClick={refreshTodos} size="default" variant="outline">
                             <ArrowCounterClockwiseIcon data-icon="inline-start" />
@@ -236,10 +270,22 @@ export function TodoApp({
                 <div className="grid gap-4 md:grid-cols-[380px_1fr]">
                     <Card className="animate-in fade-in-0 zoom-in-95 duration-200">
                         <CardHeader className="border-b">
-                            <CardTitle>Todos</CardTitle>
-                            <CardDescription>
-                                {scope === "active" ? "Working set" : "Archived items"} • {filteredTodos.length}
-                            </CardDescription>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>
+                                        {selectedTeam ? `${selectedTeam.name} Todos` : "Personal Todos"}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {scope === "active" ? "Working set" : "Archived items"} • {filteredTodos.length}
+                                    </CardDescription>
+                                </div>
+                                {selectedTeam && (
+                                    <Badge className="gap-1" variant="outline">
+                                        <UsersIcon className="size-3" />
+                                        Team
+                                    </Badge>
+                                )}
+                            </div>
                             <CardAction>
                                 <div className="flex items-center gap-1">
                                     <Button
@@ -287,9 +333,78 @@ export function TodoApp({
                                         rows={3}
                                         value={newDescription}
                                     />
+
+                                    {/* Visibility selection */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Visibility</Label>
+                                        <Select
+                                            onValueChange={(value) => {
+                                                if (!value) return;
+                                                const visibility = value as TodoVisibility;
+                                                setNewVisibility(visibility);
+                                                if (visibility === "private") {
+                                                    setNewTeamId(null);
+                                                } else if (visibility === "team" && selectedTeamId) {
+                                                    setNewTeamId(selectedTeamId);
+                                                }
+                                            }}
+                                            value={newVisibility}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="private">
+                                                    <span className="flex items-center gap-2">
+                                                        <LockIcon className="size-4" />
+                                                        Private
+                                                    </span>
+                                                </SelectItem>
+                                                <SelectItem value="team">
+                                                    <span className="flex items-center gap-2">
+                                                        <UsersIcon className="size-4" />
+                                                        Team
+                                                    </span>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Team selection when visibility is team */}
+                                    {newVisibility === "team" && (
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Assign to Team</Label>
+                                            <Select
+                                                onValueChange={(value) => setNewTeamId(value || null)}
+                                                value={newTeamId ?? ""}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select a team" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {teams.length === 0 ? (
+                                                        <SelectItem disabled value="">
+                                                            No teams available
+                                                        </SelectItem>
+                                                    ) : (
+                                                        teams.map((team) => (
+                                                            <SelectItem key={team.id} value={team.id}>
+                                                                {team.name}
+                                                            </SelectItem>
+                                                        ))
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-2">
                                         <Button
-                                            disabled={isCreating || !newTitle.trim()}
+                                            disabled={
+                                                isCreating ||
+                                                !newTitle.trim() ||
+                                                (newVisibility === "team" && !newTeamId)
+                                            }
                                             onClick={() => startCreating(createTodo)}
                                         >
                                             <PlusIcon data-icon="inline-start" />
@@ -300,6 +415,8 @@ export function TodoApp({
                                             onClick={() => {
                                                 setNewTitle("");
                                                 setNewDescription("");
+                                                setNewVisibility("private");
+                                                setNewTeamId(null);
                                             }}
                                             variant="outline"
                                         >
@@ -346,6 +463,7 @@ export function TodoApp({
                         onDelete={() => (selected ? deleteTodo(selected.id) : Promise.resolve())}
                         onPatch={(patch) => (selected ? updateTodo(selected.id, patch) : Promise.resolve())}
                         supabase={supabase}
+                        teams={teams}
                         todo={selected}
                         userEmail={userEmail}
                         userId={userId}
@@ -407,8 +525,22 @@ function TodoListItem({
                     >
                         {todo.title}
                     </div>
-                    {todo.archived ? <Badge variant="secondary">Archived</Badge> : null}
-                    {todo.status === "done" ? <Badge variant="secondary">Done</Badge> : null}
+                    <div className="flex items-center gap-1 shrink-0">
+                        {todo.visibility === "team" && (
+                            <Badge className="gap-1 text-[10px] px-1 py-0" variant="outline">
+                                <UsersIcon className="size-3" />
+                                {todo.team?.name || "Team"}
+                            </Badge>
+                        )}
+                        {todo.visibility === "private" && (
+                            <Badge className="gap-1 text-[10px] px-1 py-0" variant="secondary">
+                                <LockIcon className="size-3" />
+                                Private
+                            </Badge>
+                        )}
+                        {todo.archived ? <Badge variant="secondary">Archived</Badge> : null}
+                        {todo.status === "done" ? <Badge variant="secondary">Done</Badge> : null}
+                    </div>
                 </div>
                 {todo.description ? (
                     <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">{todo.description}</div>
@@ -459,13 +591,17 @@ function TodoDetails({
     onPatch,
     onDelete,
     supabase,
+    teams,
 }: {
     todo: TodoRow | null;
     userId: string;
     userEmail: string;
-    onPatch: (patch: Partial<Pick<TodoRow, "title" | "description" | "status" | "archived">>) => Promise<void>;
+    onPatch: (
+        patch: Partial<Pick<TodoRow, "title" | "description" | "status" | "archived" | "visibility" | "team_id">>,
+    ) => Promise<void>;
     onDelete: () => Promise<void>;
     supabase: ReturnType<typeof createClient>;
+    teams: { id: string; name: string }[];
 }) {
     const [isEditingTitle, setIsEditingTitle] = React.useState(false);
     const [titleDraft, setTitleDraft] = React.useState(todo?.title ?? "");
@@ -570,6 +706,18 @@ function TodoDetails({
             <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
                     <span className="truncate">Details</span>
+                    {todo.visibility === "team" && (
+                        <Badge className="gap-1" variant="outline">
+                            <UsersIcon className="size-3" />
+                            Team
+                        </Badge>
+                    )}
+                    {todo.visibility === "private" && (
+                        <Badge className="gap-1" variant="secondary">
+                            <LockIcon className="size-3" />
+                            Private
+                        </Badge>
+                    )}
                     {todo.archived ? <Badge variant="secondary">Archived</Badge> : null}
                     {todo.status === "done" ? <Badge variant="secondary">Done</Badge> : null}
                 </CardTitle>
@@ -672,6 +820,71 @@ function TodoDetails({
                             Reset
                         </Button>
                     </div>
+                </div>
+
+                {/* Visibility and Team Settings */}
+                <div className="space-y-3 rounded-lg border p-3">
+                    <div className="text-xs font-medium">Visibility Settings</div>
+
+                    <div className="space-y-2">
+                        <Label className="text-xs">Visibility</Label>
+                        <Select
+                            onValueChange={(value) => {
+                                if (!value) return;
+                                if (value === "private") {
+                                    onPatch({ visibility: "private", team_id: null });
+                                } else {
+                                    onPatch({ visibility: "team" });
+                                }
+                            }}
+                            value={todo.visibility}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="private">
+                                    <span className="flex items-center gap-2">
+                                        <LockIcon className="size-4" />
+                                        Private
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="team">
+                                    <span className="flex items-center gap-2">
+                                        <UsersIcon className="size-4" />
+                                        Team
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {todo.visibility === "team" && (
+                        <div className="space-y-2">
+                            <Label className="text-xs">Team</Label>
+                            <Select
+                                onValueChange={(value) => onPatch({ team_id: value || null })}
+                                value={todo.team_id ?? ""}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a team" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {teams.length === 0 ? (
+                                        <SelectItem disabled value="">
+                                            No teams available
+                                        </SelectItem>
+                                    ) : (
+                                        teams.map((team) => (
+                                            <SelectItem key={team.id} value={team.id}>
+                                                {team.name}
+                                            </SelectItem>
+                                        ))
+                                    )}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
 
                 <Separator />

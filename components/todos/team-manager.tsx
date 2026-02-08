@@ -1,14 +1,6 @@
 "use client";
 
-import {
-    CrownIcon,
-    LogOutIcon,
-    PlusIcon,
-    SettingsIcon,
-    TrashIcon,
-    UserPlusIcon,
-    UsersIcon,
-} from "@phosphor-icons/react";
+import { CrownIcon, PlusIcon, SignOutIcon, TrashIcon, UserPlusIcon, UsersIcon } from "@phosphor-icons/react";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +11,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     DropdownMenu,
@@ -29,6 +20,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useTeams } from "./team-context";
@@ -37,68 +29,68 @@ import type { TeamWithMembers } from "./types";
 export function TeamSelector() {
     const { teams, selectedTeamId, setSelectedTeamId, isLoading } = useTeams();
     const selectedTeam = teams.find((t) => t.id === selectedTeamId);
+    const [dialogOpen, setDialogOpen] = React.useState(false);
 
     if (isLoading) {
         return <Badge variant="outline">Loading teams...</Badge>;
     }
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button className="gap-2" variant="outline">
-                    <UsersIcon className="size-4" />
-                    {selectedTeam ? selectedTeam.name : "Personal"}
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => setSelectedTeamId(null)}>
-                    <span className={cn("flex-1", !selectedTeamId && "font-medium")}>Personal</span>
-                    {!selectedTeamId && <Badge variant="secondary">Active</Badge>}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {teams.length === 0 ? (
-                    <DropdownMenuItem disabled>No teams yet</DropdownMenuItem>
-                ) : (
-                    teams.map((team) => (
-                        <DropdownMenuItem key={team.id} onClick={() => setSelectedTeamId(team.id)}>
-                            <span className={cn("flex-1", selectedTeamId === team.id && "font-medium")}>
-                                {team.name}
-                            </span>
-                            {selectedTeamId === team.id && <Badge variant="secondary">Active</Badge>}
-                        </DropdownMenuItem>
-                    ))
-                )}
-                <DropdownMenuSeparator />
-                <TeamDialog />
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-}
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger>
+                    <Button className="gap-2" variant="outline">
+                        <UsersIcon className="size-4" />
+                        {selectedTeam ? selectedTeam.name : "Personal"}
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={() => setSelectedTeamId(null)}>
+                        <span className={cn("flex-1", !selectedTeamId && "font-medium")}>Personal</span>
+                        {!selectedTeamId && <Badge variant="secondary">Active</Badge>}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {teams.length === 0 ? (
+                        <DropdownMenuItem disabled>No teams yet</DropdownMenuItem>
+                    ) : (
+                        teams.map((team) => (
+                            <DropdownMenuItem key={team.id} onClick={() => setSelectedTeamId(team.id)}>
+                                <span className={cn("flex-1", selectedTeamId === team.id && "font-medium")}>
+                                    {team.name}
+                                </span>
+                                {selectedTeamId === team.id && <Badge variant="secondary">Active</Badge>}
+                            </DropdownMenuItem>
+                        ))
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setDialogOpen(true);
+                        }}
+                    >
+                        <PlusIcon className="mr-2 size-4" />
+                        Create or manage teams
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
-function TeamDialog() {
-    const [open, setOpen] = React.useState(false);
-
-    return (
-        <Dialog onOpenChange={setOpen} open={open}>
-            <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <PlusIcon className="mr-2 size-4" />
-                    Create or manage teams
-                </DropdownMenuItem>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Teams</DialogTitle>
-                    <DialogDescription>Create teams and manage members to collaborate on todos.</DialogDescription>
-                </DialogHeader>
-                <TeamManager onClose={() => setOpen(false)} />
-            </DialogContent>
-        </Dialog>
+            {/* Dialog is now outside DropdownMenu to prevent focus/conflict issues */}
+            <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Teams</DialogTitle>
+                        <DialogDescription>Create teams and manage members to collaborate on todos.</DialogDescription>
+                    </DialogHeader>
+                    <TeamManager onClose={() => setDialogOpen(false)} />
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 
 function TeamManager({ onClose }: { onClose: () => void }) {
-    const { teams, createTeam, isLoading, error } = useTeams();
+    const { teams, createTeam, error } = useTeams();
     const [newTeamName, setNewTeamName] = React.useState("");
     const [newTeamDescription, setNewTeamDescription] = React.useState("");
     const [isCreating, setIsCreating] = React.useState(false);
@@ -126,13 +118,13 @@ function TeamManager({ onClose }: { onClose: () => void }) {
 
             <TabsContent className="space-y-4" value="teams">
                 {error && (
-                    <div className="rounded border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                    <div className="rounded border border-destructive bg-destructive/10 p-3 text-destructive text-sm">
                         {error}
                     </div>
                 )}
 
                 {teams.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-muted-foreground">
+                    <div className="py-8 text-center text-muted-foreground text-sm">
                         No teams yet. Create your first team to start collaborating!
                     </div>
                 ) : (
@@ -147,8 +139,11 @@ function TeamManager({ onClose }: { onClose: () => void }) {
             <TabsContent value="create">
                 <form className="space-y-4" onSubmit={handleCreateTeam}>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Team Name</label>
+                        <Label className="font-medium text-sm" htmlFor="team-name">
+                            Team Name
+                        </Label>
                         <Input
+                            id="team-name"
                             onChange={(e) => setNewTeamName(e.target.value)}
                             placeholder="Engineering Team"
                             required
@@ -156,8 +151,11 @@ function TeamManager({ onClose }: { onClose: () => void }) {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Description (optional)</label>
+                        <Label className="font-medium text-sm" htmlFor="team-description">
+                            Description (optional)
+                        </Label>
                         <Input
+                            id="team-description"
                             onChange={(e) => setNewTeamDescription(e.target.value)}
                             placeholder="What does this team work on?"
                             value={newTeamDescription}
@@ -178,7 +176,7 @@ function TeamManager({ onClose }: { onClose: () => void }) {
 }
 
 function TeamCard({ team }: { team: TeamWithMembers }) {
-    const { inviteMember, removeMember, leaveTeam, userId } = useTeams();
+    const { inviteMember, removeMember, leaveTeam } = useTeams();
     const [isInviting, setIsInviting] = React.useState(false);
     const [inviteEmail, setInviteEmail] = React.useState("");
     const [showInviteForm, setShowInviteForm] = React.useState(false);
@@ -202,7 +200,7 @@ function TeamCard({ team }: { team: TeamWithMembers }) {
             <div className="flex items-start justify-between">
                 <div>
                     <h4 className="font-medium">{team.name}</h4>
-                    {team.description && <p className="mt-1 text-sm text-muted-foreground">{team.description}</p>}
+                    {team.description && <p className="mt-1 text-muted-foreground text-sm">{team.description}</p>}
                     <div className="mt-2 flex items-center gap-2">
                         <Badge variant="secondary">
                             <UsersIcon className="mr-1 size-3" />
@@ -228,7 +226,7 @@ function TeamCard({ team }: { team: TeamWithMembers }) {
                         </Button>
                     )}
                     <Button onClick={() => leaveTeam(team.id)} size="icon" title="Leave team" variant="ghost">
-                        <LogOutIcon className="size-4" />
+                        <SignOutIcon className="size-4" />
                     </Button>
                 </div>
             </div>
@@ -254,7 +252,7 @@ function TeamCard({ team }: { team: TeamWithMembers }) {
 
             {team.members.length > 0 && (
                 <div className="mt-4 space-y-2">
-                    <h5 className="text-xs font-medium text-muted-foreground">Members</h5>
+                    <h5 className="font-medium text-muted-foreground text-xs">Members</h5>
                     <div className="space-y-1">
                         {team.members.map((member) => (
                             <div

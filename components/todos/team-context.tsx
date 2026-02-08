@@ -2,7 +2,21 @@
 
 import * as React from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Team, TeamMember, TeamRole, TeamWithMembers } from "./types";
+import type { Team, TeamRole, TeamWithMembers } from "./types";
+
+interface TeamMemberData {
+    id: string;
+    team_id: string;
+    user_id: string;
+    role: TeamRole;
+    invited_by: string | null;
+    joined_at: string;
+    user_email?: string;
+}
+
+interface TeamData extends Team {
+    team_members?: TeamMemberData[];
+}
 
 interface TeamContextType {
     teams: TeamWithMembers[];
@@ -43,32 +57,29 @@ export function TeamProvider({
             // Fetch teams where user is member or creator
             const { data: teamsData, error: teamsError } = await supabase
                 .from("teams")
-                .select(`
-                    *,
-                    team_members(*)
-                `)
+                .select(
+                    `
+          *,
+          team_members(*)
+        `,
+                )
                 .order("created_at", { ascending: false });
 
             if (teamsError) throw teamsError;
 
-            // Get user emails for members
-            const memberUserIds =
-                teamsData?.flatMap((t: any) => t.team_members?.map((m: any) => m.user_id) || []) || [];
-
-            const uniqueUserIds = [...new Set(memberUserIds)];
-
             // Fetch user emails from auth.users (this requires admin privileges or a separate table)
             // For now, we'll use a simpler approach with the author_email stored in team_members
-            const teamsWithMembers: TeamWithMembers[] = (teamsData || []).map((team: any) => ({
+            const teamsWithMembers: TeamWithMembers[] = ((teamsData as TeamData[]) || []).map((team) => ({
                 ...team,
                 members:
-                    team.team_members?.map((m: any) => ({
+                    team.team_members?.map((m) => ({
                         ...m,
                         user_email: m.user_email || "Unknown",
                     })) || [],
                 is_admin:
                     team.created_by === userId ||
-                    team.team_members?.some((m: any) => m.user_id === userId && m.role === "admin"),
+                    team.team_members?.some((m) => m.user_id === userId && m.role === "admin") ||
+                    false,
             }));
 
             setTeams(teamsWithMembers);
