@@ -1,9 +1,9 @@
 // app/login-button.tsx
 "use client";
 
-import { createClient } from "@/utils/supabase/client";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { createClient } from "../../lib/supabase/client";
 
 export default function LoginButton() {
     const supabase = createClient();

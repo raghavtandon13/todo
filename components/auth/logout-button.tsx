@@ -1,11 +1,11 @@
-// app/logout-button.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { createClient } from "../../lib/supabase/client";
 
-export default function LogoutButton() {
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+
+export function LogoutButton({ className }: { className?: string }) {
     const supabase = createClient();
     const router = useRouter();
 
@@ -15,7 +15,7 @@ export default function LogoutButton() {
     }
 
     return (
-        <Button onClick={logout} variant="outline">
+        <Button className={className} onClick={logout} variant="outline">
             Logout
         </Button>
     );
