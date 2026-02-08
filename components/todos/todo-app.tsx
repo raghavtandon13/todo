@@ -8,8 +8,11 @@ import {
     ClipboardTextIcon,
     DotsThreeVerticalIcon,
     MagnifyingGlassIcon,
+    MonitorIcon,
+    MoonIcon,
     PencilSimpleIcon,
     PlusIcon,
+    SunIcon,
     TrashIcon,
     XCircleIcon,
 } from "@phosphor-icons/react";
@@ -51,6 +54,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { useTheme } from "../theme-provider";
 
 function formatDateTime(iso: string) {
     const d = new Date(iso);
@@ -63,6 +67,8 @@ function formatDateTime(iso: string) {
         minute: "2-digit",
     });
 }
+
+import { ThemeToggle } from "./theme-toggle";
 
 export function TodoApp({
     initialTodos,
@@ -201,6 +207,7 @@ export function TodoApp({
                     </div>
                     <div className="ml-auto flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">{userEmail}</Badge>
+                        <ThemeToggle />
                         <Button onClick={refreshTodos} size="default" variant="outline">
                             <ArrowCounterClockwiseIcon data-icon="inline-start" />
                             Refresh
