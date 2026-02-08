@@ -9,30 +9,45 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+export default function SignupPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
     const router = useRouter();
     const supabase = createClient();
 
-    async function handleLogin(e: React.FormEvent) {
+    async function handleSignup(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
+
+        if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                },
             });
 
             if (error) {
                 setError(error.message);
             } else {
-                router.push("/");
-                router.refresh();
+                setSuccess(true);
             }
         } catch {
             setError("An unexpected error occurred");
@@ -41,7 +56,7 @@ export default function LoginPage() {
         }
     }
 
-    async function handleGoogleLogin() {
+    async function handleGoogleSignup() {
         setLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
@@ -61,17 +76,38 @@ export default function LoginPage() {
         }
     }
 
+    if (success) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-background p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="space-y-1">
+                        <CardTitle className="font-bold text-2xl">Check your email</CardTitle>
+                        <CardDescription>
+                            We&apos;ve sent you a confirmation email. Please click the link in the email to complete
+                            your registration.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className="w-full" onClick={() => router.push("/login")} variant="outline">
+                            Back to Login
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-background p-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="font-bold text-2xl">Welcome back</CardTitle>
-                    <CardDescription>Enter your email and password to sign in to your account</CardDescription>
+                    <CardTitle className="font-bold text-2xl">Create an account</CardTitle>
+                    <CardDescription>Enter your email and password to create your account</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {error && <div className="rounded-md bg-red-50 p-3 text-red-500 text-sm">{error}</div>}
 
-                    <form className="space-y-4" onSubmit={handleLogin}>
+                    <form className="space-y-4" onSubmit={handleSignup}>
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <Input
@@ -93,8 +129,18 @@ export default function LoginPage() {
                                 value={password}
                             />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirm-password">Confirm Password</Label>
+                            <Input
+                                id="confirm-password"
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                type="password"
+                                value={confirmPassword}
+                            />
+                        </div>
                         <Button className="w-full" disabled={loading} type="submit">
-                            {loading ? "Signing in..." : "Sign In"}
+                            {loading ? "Creating account..." : "Sign Up"}
                         </Button>
                     </form>
 
@@ -107,7 +153,7 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    <Button className="w-full" disabled={loading} onClick={handleGoogleLogin} variant="outline">
+                    <Button className="w-full" disabled={loading} onClick={handleGoogleSignup} variant="outline">
                         <svg aria-label="Google" className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24">
                             <path
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -131,9 +177,9 @@ export default function LoginPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-2">
                     <div className="text-center text-muted-foreground text-sm">
-                        Don&apos;t have an account?{" "}
-                        <Link className="text-primary hover:underline" href="/signup">
-                            Sign up
+                        Already have an account?{" "}
+                        <Link className="text-primary hover:underline" href="/login">
+                            Sign in
                         </Link>
                     </div>
                 </CardFooter>

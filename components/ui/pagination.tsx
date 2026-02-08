@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,6 @@ import { CaretLeftIcon, CaretRightIcon, DotsThreeIcon } from "@phosphor-icons/re
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
     return (
         <nav
-            role="navigation"
             aria-label="pagination"
             data-slot="pagination"
             className={cn("mx-auto flex w-full justify-center", className)}
@@ -17,7 +16,7 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
 }
 
 function PaginationContent({ className, ...props }: React.ComponentProps<"ul">) {
-    return <ul data-slot="pagination-content" className={cn("gap-0.5 flex items-center", className)} {...props} />;
+    return <ul data-slot="pagination-content" className={cn("flex items-center gap-0.5", className)} {...props} />;
 }
 
 function PaginationItem({ ...props }: React.ComponentProps<"li">) {
@@ -79,7 +78,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
         <span
             aria-hidden
             data-slot="pagination-ellipsis"
-            className={cn("size-8 [&_svg:not([class*='size-'])]:size-4 flex items-center justify-center", className)}
+            className={cn("flex size-8 items-center justify-center [&_svg:not([class*='size-'])]:size-4", className)}
             {...props}
         >
             <DotsThreeIcon />

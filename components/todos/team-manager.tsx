@@ -38,12 +38,14 @@ export function TeamSelector() {
     return (
         <>
             <DropdownMenu>
-                <DropdownMenuTrigger>
-                    <Button className="gap-2" variant="outline">
-                        <UsersIcon className="size-4" />
-                        {selectedTeam ? selectedTeam.name : "Personal"}
-                    </Button>
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger
+                    render={
+                        <Button className="gap-2" variant="outline">
+                            <UsersIcon className="size-4" />
+                            {selectedTeam ? selectedTeam.name : "Personal"}
+                        </Button>
+                    }
+                />
                 <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem onClick={() => setSelectedTeamId(null)}>
                         <span className={cn("flex-1", !selectedTeamId && "font-medium")}>Personal</span>

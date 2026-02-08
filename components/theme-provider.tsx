@@ -31,10 +31,25 @@ function applyHtmlClass(theme: Theme) {
     }
 }
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+export const ThemeProvider: React.FC<{ children: React.ReactNode; defaultTheme?: Theme }> = ({
+    children,
+    defaultTheme = "dark",
+}) => {
+    const [theme, setThemeState] = useState<Theme>(defaultTheme);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
+        // Check localStorage for saved theme
+        const savedTheme = window.localStorage.getItem("theme") as Theme | null;
+        if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
+            setThemeState(savedTheme);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+
         if (theme === "system") {
             window.localStorage.removeItem("theme");
         } else {
@@ -48,12 +63,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             mq.addEventListener("change", handler);
             return () => mq.removeEventListener("change", handler);
         }
-    }, [theme]);
-
-    // Hydrate on mount
-    useEffect(() => {
-        applyHtmlClass(theme);
-    }, [theme]);
+    }, [theme, mounted]);
 
     function setTheme(newTheme: Theme) {
         setThemeState(newTheme);

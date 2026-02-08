@@ -1,0 +1,296 @@
+Console Error
+
+
+A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+See more info here: https://nextjs.org/docs/messages/react-hydration-error
+
+
+  ...
+    <Page>
+      <TeamProvider initialTeams={[...]} userId="415c43a9-1...">
+        ...
+          <div className="min-h-scre...">
+            <div className="mx-auto w-...">
+              <header className="mb-4 flex ...">
+                <div>
+                <div className="ml-auto fl...">
+                  <Badge>
+                  ...
+                    <DropdownMenuTrigger render={<Button>}>
+                      <MenuTrigger data-slot="dropdown-m..." render={<Button>}>
+                        <Button className="gap-2" variant="outline" type="button" onClick={function onClick} ...>
+                          <Button data-slot="dropdown-m..." className={"focus-vi..."} type="button" ...>
+                            <button
+                              type="button"
+                              onClick={function onClick}
+                              onMouseDown={function onMouseDown}
+                              onKeyDown={function}
+                              onKeyUp={function onKeyUp}
+                              onPointerDown={function onPointerDown}
+                              tabIndex={0}
+                              disabled={false}
+                              data-slot="dropdown-menu-trigger"
+                              onPointerEnter={function setPointerRef}
+                              onMouseMove={function onMouseMove}
+                              aria-haspopup="menu"
++                             id="base-ui-_R_3ailrlb_"
+-                             id="base-ui-_R_daclrlb_"
+                              ref={function}
+                              className={"focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-dest..."}
+                            >
+                    ...
+                  ...
+                    <DropdownMenuTrigger render={<Button>}>
+                      <MenuTrigger data-slot="dropdown-m..." render={<Button>}>
+                        <Button aria-label="Toggle theme" size="icon" variant="ghost" type="button" ...>
+                          <Button data-slot="dropdown-m..." className={"focus-vi..."} aria-label="Toggle theme" ...>
+                            <button
+                              type="button"
+                              onClick={function onClick}
+                              onMouseDown={function onMouseDown}
+                              onKeyDown={function}
+                              onKeyUp={function onKeyUp}
+                              onPointerDown={function onPointerDown}
+                              tabIndex={0}
+                              disabled={false}
+                              data-slot="dropdown-menu-trigger"
+                              aria-label="Toggle theme"
+                              onPointerEnter={function setPointerRef}
+                              onMouseMove={function onMouseMove}
+                              aria-haspopup="menu"
++                             id="base-ui-_R_rilrlb_"
+-                             id="base-ui-_R_3eclrlb_"
+                              ref={function}
+                              className={"focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-dest..."}
+                            >
+                    ...
+                  ...
+              <div className="grid gap-4...">
+                <Card className="animate-in...">
+                  <div data-slot="card" data-size="default" className={"ring-for..."}>
+                    <CardHeader>
+                    <CardContent className="space-y-3">
+                      <div data-slot="card-content" className="px-4 group...">
+                        ...
+                          <InputGroupInput onChange={function onChange} placeholder="Search todos" value="">
+                            <Input data-slot="input-grou..." className="rounded-no..." onChange={function onChange} ...>
+                              <Input type={undefined} data-slot="input-grou..." className="border-inp..." ...>
+                                <FieldControl ref={null} type={undefined} data-slot="input-grou..." ...>
+                                  <input
++                                   id="base-ui-_R_26elrlb_"
+-                                   id="base-ui-_R_8pslrlb_"
+                                    disabled={false}
+                                    name={undefined}
+                                    ref={function}
+                                    aria-labelledby={undefined}
+                                    value=""
+                                    onChange={function}
+                                    onFocus={function onFocus}
+                                    onBlur={function onBlur}
+                                    onKeyDown={function onKeyDown}
+                                    type={undefined}
+                                    data-slot="input-group-control"
+                                    placeholder="Search todos"
+                                    className="border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-..."
+                                  >
+                        <div className="space-y-2">
+                          <div>
+                          <div className="space-y-2">
+                            <Input onChange={function onChange} placeholder="Title (e.g..." value="">
+                              <Input type={undefined} data-slot="input" className="dark:bg-in..." ...>
+                                <FieldControl ref={null} type={undefined} data-slot="input" className="dark:bg-in..." ...>
+                                  <input
++                                   id="base-ui-_R_6aelrlb_"
+-                                   id="base-ui-_R_p9slrlb_"
+                                    disabled={false}
+                                    name={undefined}
+                                    ref={function}
+                                    aria-labelledby={undefined}
+                                    value=""
+                                    onChange={function}
+                                    onFocus={function onFocus}
+                                    onBlur={function onBlur}
+                                    onKeyDown={function onKeyDown}
+                                    type={undefined}
+                                    data-slot="input"
+                                    placeholder="Title (e.g. Ship comments UI)"
+                                    className="dark:bg-input/30 border-input focus-visible:border-ring focus-visible:r..."
+                                  >
+                            <Textarea>
+                            ...
+                              <SelectTrigger className="w-full">
+                                <SelectTrigger data-slot="select-tri..." data-size="default" className={"border-i..."}>
+                                  <button
+                                    type="button"
+                                    onClick={function onClick}
+                                    onMouseDown={function onMouseDown}
+                                    onKeyDown={function}
+                                    onKeyUp={function onKeyUp}
+                                    onPointerDown={function onPointerDown}
+                                    tabIndex={0}
+                                    disabled={false}
+                                    onFocus={function}
+                                    onPointerEnter={function}
++                                   id="base-ui-_R_2eaelrlb_"
+-                                   id="base-ui-_R_9p9slrlb_"
+                                    role="combobox"
+                                    aria-expanded="false"
+                                    aria-haspopup="listbox"
+                                    aria-controls={undefined}
+                                    aria-labelledby={undefined}
+                                    aria-readonly={undefined}
+                                    aria-required={undefined}
+                                    ref={function}
+                                    onBlur={function onBlur}
+                                    onPointerMove={function onPointerMove}
+                                    data-slot="select-trigger"
+                                    data-size="default"
+                                    className={"border-input data-placeholder:text-muted-foreground dark:bg-input/30 ..."}
+                                  >
+                              ...
+                            ...
+                        <Separator>
+                        ...
+                          <MenuTrigger data-slot="dropdown-m..." render={<Button>}>
+                            <Button size="icon" variant="ghost" type="button" onClick={function onClick} ...>
+                              <Button data-slot="dropdown-m..." className={"focus-vi..."} type="button" ...>
+                                <button
+                                  type="button"
+                                  onClick={function onClick}
+                                  onMouseDown={function onMouseDown}
+                                  onKeyDown={function}
+                                  onKeyUp={function onKeyUp}
+                                  onPointerDown={function onPointerDown}
+                                  tabIndex={0}
+                                  disabled={false}
+                                  data-slot="dropdown-menu-trigger"
+                                  onPointerEnter={function setPointerRef}
+                                  onMouseMove={function onMouseMove}
+                                  aria-haspopup="menu"
++                                 id="base-ui-_R_3uielrlb_"
+-                                 id="base-ui-_R_fq9slrlb_"
+                                  ref={function}
+                                  className={"focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-..."}
+                                >
+                    ...
+                ...
+                  <div data-slot="card" data-size="default" className={"ring-for..."}>
+                    ...
+                      <AlertDialogRoot data-slot="alert-dialog">
+                        <AlertDialogTrigger render={<Button>}>
+                          <DialogTrigger data-slot="alert-dial..." render={<Button>}>
+                            <Button size="sm" variant="destructive" type="button" onClick={function onClick} ...>
+                              <Button data-slot="alert-dial..." className={"aria-inv..."} type="button" ...>
+                                <button
+                                  type="button"
+                                  onClick={function onClick}
+                                  onMouseDown={function onMouseDown}
+                                  onKeyDown={function}
+                                  onKeyUp={function onKeyUp}
+                                  onPointerDown={function onPointerDown}
+                                  tabIndex={0}
+                                  disabled={false}
+                                  data-slot="alert-dialog-trigger"
+                                  data-base-ui-click-trigger=""
++                                 id="base-ui-_R_7tmlrlb_"
+-                                 id="base-ui-_R_vmslrlb_"
+                                  ref={function}
+                                  className={"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 ..."}
+                                >
+                        ...
+                    ...
+                      <div className="space-y-3 ...">
+                        <div>
+                        ...
+                          <SelectTrigger className="w-full">
+                            <SelectTrigger data-slot="select-tri..." data-size="default" className={"border-i..."}>
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                onMouseDown={function onMouseDown}
+                                onKeyDown={function}
+                                onKeyUp={function onKeyUp}
+                                onPointerDown={function onPointerDown}
+                                tabIndex={0}
+                                disabled={false}
+                                onFocus={function}
+                                onPointerEnter={function}
++                               id="base-ui-_R_aemlrlb_"
+-                               id="base-ui-_R_19qslrlb_"
+                                role="combobox"
+                                aria-expanded="false"
+                                aria-haspopup="listbox"
+                                aria-controls={undefined}
+                                aria-labelledby={undefined}
+                                aria-readonly={undefined}
+                                aria-required={undefined}
+                                ref={function}
+                                onBlur={function onBlur}
+                                onPointerMove={function onPointerMove}
+                                data-slot="select-trigger"
+                                data-size="default"
+                                className={"border-input data-placeholder:text-muted-foreground dark:bg-input/30 dark..."}
+                              >
+                          ...
+                          ...
+                        ...
+                          <SelectTrigger className="w-full">
+                            <SelectTrigger data-slot="select-tri..." data-size="default" className={"border-i..."}>
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                onMouseDown={function onMouseDown}
+                                onKeyDown={function}
+                                onKeyUp={function onKeyUp}
+                                onPointerDown={function onPointerDown}
+                                tabIndex={0}
+                                disabled={false}
+                                onFocus={function}
+                                onPointerEnter={function}
++                               id="base-ui-_R_bemlrlb_"
+-                               id="base-ui-_R_1dqslrlb_"
+                                role="combobox"
+                                aria-expanded="false"
+                                aria-haspopup="listbox"
+                                aria-controls={undefined}
+                                aria-labelledby={undefined}
+                                aria-readonly={undefined}
+                                aria-required={undefined}
+                                ref={function}
+                                onBlur={function onBlur}
+                                onPointerMove={function onPointerMove}
+                                data-slot="select-trigger"
+                                data-size="default"
+                                className={"border-input data-placeholder:text-muted-foreground dark:bg-input/30 dark..."}
+                              >
+                          ...
+                          ...
+                    ...
+components/ui/button.tsx (48:9) @ Button
+
+
+  46 | }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  47 |     return (
+> 48 |         <ButtonPrimitive data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />
+     |         ^
+  49 |     );
+  50 | }
+  51 |
+Call Stack
+27
+
+Show 20 ignore-listed frame(s)
+button
+<anonymous>
+Button
+components/ui/button.tsx (48:9)
+TeamSelector
+components/todos/team-manager.tsx (43:25)

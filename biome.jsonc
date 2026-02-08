@@ -8,7 +8,9 @@
         "rules": {
             "nursery": { "useSortedClasses": "warn" },
             "recommended": true,
-            "style": { "noNonNullAssertion": "off" }
+            "style": { "noNonNullAssertion": "off" },
+            "a11y": { "noLabelWithoutControl": "off" },
+            "suspicious": { "noArrayIndexKey": "off", "useIterableCallbackReturn": "off" }
         }
     },
     "javascript": { "formatter": { "quoteStyle": "double" } },

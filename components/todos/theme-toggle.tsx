@@ -1,6 +1,5 @@
 "use client";
 import { MonitorIcon, MoonIcon, SunIcon } from "@phosphor-icons/react";
-import React from "react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,

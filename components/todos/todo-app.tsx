@@ -16,6 +16,7 @@ import {
     XCircleIcon,
 } from "@phosphor-icons/react";
 import * as React from "react";
+import { LogoutButton } from "@/components/auth/logout-button";
 import type { CommentRow, TodoRow, TodoVisibility } from "@/components/todos/types";
 import {
     AlertDialog,
@@ -62,12 +63,14 @@ import { ThemeToggle } from "./theme-toggle";
 function formatDateTime(iso: string) {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleString(undefined, {
+    // Use en-US locale consistently to avoid hydration mismatches
+    return d.toLocaleString("en-US", {
         year: "numeric",
         month: "short",
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
+        hour12: true,
     });
 }
 
@@ -226,16 +229,19 @@ export function TodoApp({
     }
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_10%_10%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent),radial-gradient(1000px_500px_at_85%_30%,color-mix(in_oklab,var(--chart-1)_18%,transparent),transparent)]">
+        <div
+            className="min-h-screen bg-[radial-gradient(1200px_600px_at_10%_10%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent),radial-gradient(1000px_500px_at_85%_30%,color-mix(in_oklab,var(--chart-1)_18%,transparent),transparent)]"
+            suppressHydrationWarning
+        >
             <div className="mx-auto w-full max-w-6xl p-4 sm:p-6 lg:p-10">
                 <header className="mb-4 flex flex-wrap items-center gap-2 sm:mb-6">
                     <div className="flex items-center gap-2">
-                        <div className="ring-foreground/10 bg-background grid size-8 place-items-center rounded-none ring-1">
+                        <div className="grid size-8 place-items-center rounded-none bg-background ring-1 ring-foreground/10">
                             <ClipboardTextIcon className="size-4" />
                         </div>
                         <div>
-                            <div className="text-base font-medium leading-none">Todo Studio</div>
-                            <div className="text-muted-foreground mt-1 text-xs">Add, edit, archive, comment</div>
+                            <div className="font-medium text-base leading-none">Todo Studio</div>
+                            <div className="mt-1 text-muted-foreground text-xs">Add, edit, archive, comment</div>
                         </div>
                     </div>
                     <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -246,6 +252,7 @@ export function TodoApp({
                             <ArrowCounterClockwiseIcon data-icon="inline-start" />
                             Refresh
                         </Button>
+                        <LogoutButton />
                     </div>
                 </header>
 
@@ -268,7 +275,7 @@ export function TodoApp({
                 ) : null}
 
                 <div className="grid gap-4 md:grid-cols-[380px_1fr]">
-                    <Card className="animate-in fade-in-0 zoom-in-95 duration-200">
+                    <Card className="fade-in-0 zoom-in-95 animate-in duration-200">
                         <CardHeader className="border-b">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -320,7 +327,7 @@ export function TodoApp({
                             </InputGroup>
 
                             <div className="space-y-2">
-                                <div className="text-muted-foreground text-xs font-medium">New todo</div>
+                                <div className="font-medium text-muted-foreground text-xs">New todo</div>
                                 <div className="space-y-2">
                                     <Input
                                         onChange={(e) => setNewTitle(e.target.value)}
@@ -430,7 +437,7 @@ export function TodoApp({
 
                             <div className="space-y-1">
                                 {filteredTodos.length === 0 ? (
-                                    <div className="text-muted-foreground py-10 text-center text-xs">
+                                    <div className="py-10 text-center text-muted-foreground text-xs">
                                         No todos in this view.
                                     </div>
                                 ) : null}
@@ -494,7 +501,7 @@ function TodoListItem({
     return (
         <div
             className={cn(
-                "ring-foreground/10 hover:bg-muted/40 group flex items-start gap-2 rounded-none p-2 ring-1 transition-colors",
+                "group flex items-start gap-2 rounded-none p-2 ring-1 ring-foreground/10 transition-colors hover:bg-muted/40",
                 active ? "bg-muted/40" : "bg-background",
             )}
         >
@@ -502,7 +509,7 @@ function TodoListItem({
                 aria-label={todo.status === "done" ? "Mark as open" : "Mark as done"}
                 className={cn(
                     "mt-0.5 grid size-5 place-items-center rounded-none border",
-                    todo.status === "done" ? "bg-primary text-primary-foreground border-transparent" : "border-border",
+                    todo.status === "done" ? "border-transparent bg-primary text-primary-foreground" : "border-border",
                 )}
                 onClick={onToggleDone}
                 type="button"
@@ -519,21 +526,21 @@ function TodoListItem({
                 <div className="flex items-start gap-2">
                     <div
                         className={cn(
-                            "min-w-0 flex-1 truncate text-xs font-medium",
+                            "min-w-0 flex-1 truncate font-medium text-xs",
                             todo.archived ? "opacity-70" : null,
                         )}
                     >
                         {todo.title}
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex shrink-0 items-center gap-1">
                         {todo.visibility === "team" && (
-                            <Badge className="gap-1 text-[10px] px-1 py-0" variant="outline">
+                            <Badge className="gap-1 px-1 py-0 text-[10px]" variant="outline">
                                 <UsersIcon className="size-3" />
                                 {todo.team?.name || "Team"}
                             </Badge>
                         )}
                         {todo.visibility === "private" && (
-                            <Badge className="gap-1 text-[10px] px-1 py-0" variant="secondary">
+                            <Badge className="gap-1 px-1 py-0 text-[10px]" variant="secondary">
                                 <LockIcon className="size-3" />
                                 Private
                             </Badge>
@@ -543,9 +550,9 @@ function TodoListItem({
                     </div>
                 </div>
                 {todo.description ? (
-                    <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">{todo.description}</div>
+                    <div className="mt-1 line-clamp-2 text-muted-foreground text-xs">{todo.description}</div>
                 ) : null}
-                <div className="text-muted-foreground mt-1 flex items-center gap-2 text-[11px]">
+                <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="truncate">{todo.author_email ?? ""}</span>
                     <span aria-hidden="true">•</span>
                     <span className="truncate">{formatDateTime(todo.created_at)}</span>
@@ -646,7 +653,7 @@ function TodoDetails({
 
     if (!todo) {
         return (
-            <Card className="animate-in fade-in-0 zoom-in-95 duration-200">
+            <Card className="fade-in-0 zoom-in-95 animate-in duration-200">
                 <CardHeader>
                     <CardTitle>Details</CardTitle>
                     <CardDescription>Select a todo to see details and comments.</CardDescription>
@@ -702,7 +709,7 @@ function TodoDetails({
     }
 
     return (
-        <Card className="animate-in fade-in-0 zoom-in-95 duration-200">
+        <Card className="fade-in-0 zoom-in-95 animate-in duration-200">
             <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
                     <span className="truncate">Details</span>
@@ -772,7 +779,7 @@ function TodoDetails({
 
             <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <div className="text-muted-foreground text-xs font-medium">Title</div>
+                    <div className="font-medium text-muted-foreground text-xs">Title</div>
                     {isEditingTitle ? (
                         <div className="flex items-center gap-2">
                             <Input onChange={(e) => setTitleDraft(e.target.value)} value={titleDraft} />
@@ -791,7 +798,7 @@ function TodoDetails({
                         </div>
                     ) : (
                         <div className="flex items-start gap-2">
-                            <div className="flex-1 text-sm font-medium leading-snug">{todo.title}</div>
+                            <div className="flex-1 font-medium text-sm leading-snug">{todo.title}</div>
                             <Button onClick={() => setIsEditingTitle(true)} size="icon" variant="outline">
                                 <PencilSimpleIcon />
                                 <span className="sr-only">Edit title</span>
@@ -801,7 +808,7 @@ function TodoDetails({
                 </div>
 
                 <div className="space-y-2">
-                    <div className="text-muted-foreground text-xs font-medium">Description</div>
+                    <div className="font-medium text-muted-foreground text-xs">Description</div>
                     <Textarea
                         onChange={(e) => setDescDraft(e.target.value)}
                         placeholder="Add notes, acceptance criteria, links, etc."
@@ -824,7 +831,7 @@ function TodoDetails({
 
                 {/* Visibility and Team Settings */}
                 <div className="space-y-3 rounded-lg border p-3">
-                    <div className="text-xs font-medium">Visibility Settings</div>
+                    <div className="font-medium text-xs">Visibility Settings</div>
 
                     <div className="space-y-2">
                         <Label className="text-xs">Visibility</Label>
@@ -892,7 +899,7 @@ function TodoDetails({
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
                         <div>
-                            <div className="text-xs font-medium">Comments</div>
+                            <div className="font-medium text-xs">Comments</div>
                             <div className="text-muted-foreground text-xs">{comments?.length ?? 0} total</div>
                         </div>
                         {isLoadingComments ? <Badge variant="secondary">Loading</Badge> : null}
@@ -907,10 +914,10 @@ function TodoDetails({
                             <div className="space-y-2">
                                 {(comments ?? []).map((c) => (
                                     <div
-                                        className="ring-foreground/10 bg-background space-y-1 rounded-none p-2 ring-1"
+                                        className="space-y-1 rounded-none bg-background p-2 ring-1 ring-foreground/10"
                                         key={c.id}
                                     >
-                                        <div className="text-muted-foreground flex items-center justify-between gap-2 text-[11px]">
+                                        <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
                                             <span className="truncate">{c.author_email ?? ""}</span>
                                             <span className="shrink-0">{formatDateTime(c.created_at)}</span>
                                         </div>
