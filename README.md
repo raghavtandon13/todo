@@ -2,6 +2,8 @@
 
 A tiny Next.js + Supabase app using **server-first authentication**.
 
+![Screenshot](./public/readme/home.png)
+
 ## Auth Model
 
 - Supabase manages sessions via HTTP-only cookies
