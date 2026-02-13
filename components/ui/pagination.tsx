@@ -1,22 +1,21 @@
-import type * as React from "react";
-
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { CaretLeftIcon, CaretRightIcon, DotsThreeIcon } from "@phosphor-icons/react";
+import type * as React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
     return (
         <nav
             aria-label="pagination"
-            data-slot="pagination"
             className={cn("mx-auto flex w-full justify-center", className)}
+            data-slot="pagination"
             {...props}
         />
     );
 }
 
 function PaginationContent({ className, ...props }: React.ComponentProps<"ul">) {
-    return <ul data-slot="pagination-content" className={cn("flex items-center gap-0.5", className)} {...props} />;
+    return <ul className={cn("flex items-center gap-0.5", className)} data-slot="pagination-content" {...props} />;
 }
 
 function PaginationItem({ ...props }: React.ComponentProps<"li">) {
@@ -31,18 +30,18 @@ type PaginationLinkProps = {
 function PaginationLink({ className, isActive, size = "icon", ...props }: PaginationLinkProps) {
     return (
         <Button
-            variant={isActive ? "outline" : "ghost"}
-            size={size}
             className={cn(className)}
             nativeButton={false}
             render={
                 <a
                     aria-current={isActive ? "page" : undefined}
-                    data-slot="pagination-link"
                     data-active={isActive}
+                    data-slot="pagination-link"
                     {...props}
                 />
             }
+            size={size}
+            variant={isActive ? "outline" : "ghost"}
         />
     );
 }
@@ -53,7 +52,7 @@ function PaginationPrevious({
     ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
     return (
-        <PaginationLink aria-label="Go to previous page" size="default" className={cn("pl-1.5!", className)} {...props}>
+        <PaginationLink aria-label="Go to previous page" className={cn("pl-1.5!", className)} size="default" {...props}>
             <CaretLeftIcon data-icon="inline-start" />
             <span className="hidden sm:block">{text}</span>
         </PaginationLink>
@@ -66,7 +65,7 @@ function PaginationNext({
     ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
     return (
-        <PaginationLink aria-label="Go to next page" size="default" className={cn("pr-1.5!", className)} {...props}>
+        <PaginationLink aria-label="Go to next page" className={cn("pr-1.5!", className)} size="default" {...props}>
             <span className="hidden sm:block">{text}</span>
             <CaretRightIcon data-icon="inline-end" />
         </PaginationLink>
@@ -77,8 +76,8 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
     return (
         <span
             aria-hidden
-            data-slot="pagination-ellipsis"
             className={cn("flex size-8 items-center justify-center [&_svg:not([class*='size-'])]:size-4", className)}
+            data-slot="pagination-ellipsis"
             {...props}
         >
             <DotsThreeIcon />

@@ -1,5 +1,6 @@
 "use client";
 
+import { GithubLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,7 +9,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { GithubLogoIcon } from "@phosphor-icons/react";
 
 export default function SignupPage() {
     const [email, setEmail] = useState("");
@@ -57,14 +57,14 @@ export default function SignupPage() {
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "github",
-                options: { redirectTo: "http://localhost:3000" },
+                options: { redirectTo: window.location.origin },
             });
             if (error) setError(error.message);
+	    router.refresh();
         } catch {
             setError("An unexpected error occurred");
         } finally {
             setLoading(false);
-            router.refresh();
         }
     }
 

@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 function Progress({ className, children, value, ...props }: ProgressPrimitive.Root.Props) {
     return (
         <ProgressPrimitive.Root
-            value={value}
-            data-slot="progress"
             className={cn("flex flex-wrap gap-3", className)}
+            data-slot="progress"
+            value={value}
             {...props}
         >
             {children}
@@ -33,8 +33,8 @@ function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
 function ProgressIndicator({ className, ...props }: ProgressPrimitive.Indicator.Props) {
     return (
         <ProgressPrimitive.Indicator
-            data-slot="progress-indicator"
             className={cn("h-full bg-primary transition-all", className)}
+            data-slot="progress-indicator"
             {...props}
         />
     );
